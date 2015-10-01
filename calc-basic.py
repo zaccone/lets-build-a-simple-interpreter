@@ -129,19 +129,21 @@ class Interpreter(object):
         """expr -> INTEGER PLUS INTEGER"""
         self.current_token = self.get_next_token()
 
-        left = self.current_token
+        result = self.current_token.value
         self.eat([INTEGER])
-        op = self.current_token
-        self.eat(OPERATORS.keys())
+        while self.current_token.type is not EOF:
+            op = self.current_token
+            self.eat(OPERATORS.keys())
 
-        right = self.current_token
-        self.eat([INTEGER])
+            right = self.current_token
+            self.eat([INTEGER])
 
-        if op.type in OPERATORS:
-            return OPERATORS[op.type](left.value, right.value)
+            if op.type in OPERATORS:
+                result = OPERATORS[op.type](result, right.value)
+            else:
+                self.error()
 
-        # sanity check
-        self.error()
+        return result
 
 
 def main():
