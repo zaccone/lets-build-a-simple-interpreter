@@ -2,7 +2,7 @@
 #
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, PLUS, EOF = 'INTEGER', 'PLUS', 'EOF'
+INTEGER, PLUS, MINUS, EOF = 'INTEGER', 'PLUS', 'MINUS', 'EOF'
 
 
 class Token(object):
@@ -97,6 +97,11 @@ class Interpreter(object):
             self.pos += 1
             return token
 
+        if current_char == '-':
+            token = Token(MINUS, current_char)
+            self.pos += 1
+            return token
+
         self.error()
 
     def eat(self, token_type):
@@ -104,7 +109,7 @@ class Interpreter(object):
         # type and if they match then "eat" the current token
         # and assign the next token to the self.current_token,
         # otherwise raise an exception.
-        if self.current_token.type == token_type:
+        if self.current_token.type in token_type:
             self.current_token = self.get_next_token()
         else:
             self.error()
@@ -116,14 +121,14 @@ class Interpreter(object):
 
         # we expect the current token to be a single-digit integer
         left = self.current_token
-        self.eat(INTEGER)
+        self.eat([INTEGER])
         # we expect the current token to be a '+' token
         op = self.current_token
-        self.eat(PLUS)
+        self.eat([PLUS, MINUS])
 
         # we expect the current token to be a single-digit integer
         right = self.current_token
-        self.eat(INTEGER)
+        self.eat([INTEGER])
         # after the above call the self.current_token is set to
         # EOF token
 
@@ -131,8 +136,14 @@ class Interpreter(object):
         # has been successfully found and the method can just
         # return the result of adding two integers, thus
         # effectively interpreting client input
-        result = left.value + right.value
-        return result
+
+        if op.type == PLUS:
+            return left.value + right.value
+        elif op.type == MINUS:
+            return left.value - right.value
+
+        # sanity check
+        self.error()
 
 
 def main():
