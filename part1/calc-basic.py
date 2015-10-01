@@ -46,6 +46,19 @@ class Interpreter(object):
         This method is responsible for breaking a sentence
         apart into tokens. One token at a time.
         """
+
+        def _build_number():
+            number = 0
+            pos = self.pos
+            for candidate in text[pos:]:
+                if candidate.isdigit():
+                    number *= 10
+                    number += int(candidate)
+                    self.pos += 1
+                else:
+                    break
+            return number
+
         text = self.text
 
         # is self.pos index past the end of the self.text ?
@@ -63,8 +76,9 @@ class Interpreter(object):
         # index to point to the next character after the digit,
         # and return the INTEGER token
         if current_char.isdigit():
-            token = Token(INTEGER, int(current_char))
-            self.pos += 1
+
+            number = _build_number()
+            token = Token(INTEGER, number)
             return token
 
         if current_char == '+':
@@ -92,7 +106,6 @@ class Interpreter(object):
         # we expect the current token to be a single-digit integer
         left = self.current_token
         self.eat(INTEGER)
-
         # we expect the current token to be a '+' token
         op = self.current_token
         self.eat(PLUS)
