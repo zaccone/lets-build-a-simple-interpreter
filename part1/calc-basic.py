@@ -59,7 +59,17 @@ class Interpreter(object):
                     break
             return number
 
+        def _skip_spaces():
+            while self.pos < len(text):
+                current_char = text[self.pos]
+                if current_char == ' ':
+                    self.pos += 1
+                else:
+                    return
+
         text = self.text
+
+        _skip_spaces()
 
         # is self.pos index past the end of the self.text ?
         # if so, then return EOF token because there is no more
@@ -69,12 +79,13 @@ class Interpreter(object):
 
         # get a character at the position self.pos and decide
         # what token to create based on the single character
-        current_char = text[self.pos]
-
         # if the character is a digit then convert it to
         # integer, create an INTEGER token, increment self.pos
         # index to point to the next character after the digit,
         # and return the INTEGER token
+
+        current_char = text[self.pos]
+
         if current_char.isdigit():
 
             number = _build_number()
