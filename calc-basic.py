@@ -62,7 +62,7 @@ class Interpreter(object):
         apart into tokens. One token at a time.
         """
 
-        def _build_number():
+        def build_number():
             number = 0
             pos = self.pos
             for candidate in text[pos:]:
@@ -74,17 +74,17 @@ class Interpreter(object):
                     break
             return number
 
-        def _skip_spaces():
+        def skip_spaces():
             while self.pos < len(text):
                 current_char = text[self.pos]
-                if current_char == ' ':
+                if current_char.isspace():
                     self.pos += 1
                 else:
                     return
 
         text = self.text
 
-        _skip_spaces()
+        skip_spaces()
 
         # is self.pos index past the end of the self.text ?
         # if so, then return EOF token because there is no more
@@ -103,7 +103,7 @@ class Interpreter(object):
 
         if current_char.isdigit():
 
-            number = _build_number()
+            number = build_number()
             token = Token(INTEGER, number)
             return token
 
@@ -114,6 +114,11 @@ class Interpreter(object):
             return token
 
         self.error()
+
+    def term(self):
+        token = self.current_token
+        self.eat([INTEGER])
+        return token.value
 
     def eat(self, token_type):
         # compare the current token type with the passed token
@@ -129,17 +134,15 @@ class Interpreter(object):
         """expr -> INTEGER PLUS INTEGER"""
         self.current_token = self.get_next_token()
 
-        result = self.current_token.value
-        self.eat([INTEGER])
+        result = self.term()
         while self.current_token.type is not EOF:
             op = self.current_token
             self.eat(OPERATORS.keys())
 
-            right = self.current_token
-            self.eat([INTEGER])
+            right = self.term()
 
             if op.type in OPERATORS:
-                result = OPERATORS[op.type](result, right.value)
+                result = OPERATORS[op.type](result, right)
             else:
                 self.error()
 
