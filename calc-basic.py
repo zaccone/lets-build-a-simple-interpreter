@@ -2,7 +2,22 @@
 #
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, PLUS, MINUS, EOF = 'INTEGER', 'PLUS', 'MINUS', 'EOF'
+INTEGER, PLUS, MINUS, MUL, DIV, EOF = ('INTEGER', 'PLUS', 'MINUS', 'MUL',
+                                       'DIV', 'EOF')
+
+OPERATORS = {
+    PLUS: lambda x, y: x + y,
+    MINUS: lambda x, y: x - y,
+    MUL: lambda x, y: x * y,
+    DIV: lambda x, y: x/y
+}
+
+CHAR_OPERATORS = {
+    '+': PLUS,
+    '-': MINUS,
+    '*': MUL,
+    '/': DIV
+}
 
 
 class Token(object):
@@ -92,13 +107,9 @@ class Interpreter(object):
             token = Token(INTEGER, number)
             return token
 
-        if current_char == '+':
-            token = Token(PLUS, current_char)
-            self.pos += 1
-            return token
-
-        if current_char == '-':
-            token = Token(MINUS, current_char)
+        if current_char in CHAR_OPERATORS:
+            operator = CHAR_OPERATORS[current_char]
+            token = Token(operator, current_char)
             self.pos += 1
             return token
 
@@ -124,7 +135,7 @@ class Interpreter(object):
         self.eat([INTEGER])
         # we expect the current token to be a '+' token
         op = self.current_token
-        self.eat([PLUS, MINUS])
+        self.eat(OPERATORS.keys())
 
         # we expect the current token to be a single-digit integer
         right = self.current_token
@@ -137,10 +148,8 @@ class Interpreter(object):
         # return the result of adding two integers, thus
         # effectively interpreting client input
 
-        if op.type == PLUS:
-            return left.value + right.value
-        elif op.type == MINUS:
-            return left.value - right.value
+        if op.type in OPERATORS:
+            return OPERATORS[op.type](left.value, right.value)
 
         # sanity check
         self.error()
